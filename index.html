@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GP BOYZ Motorcycle Club | Official Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cyan: '#00f2fe',
+                            neon: '#39ff14',
+                            gold: '#ffd700',
+                            dark: '#0a0d14',
+                            card: '#121722',
+                            border: '#1f293d',
+                            accent: '#ff0055'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080a0f;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        .font-display {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+
+        /* Carbon fiber patterned background overlay */
+        .carbon-bg {
+            background-color: #0d111a;
+            background-image: radial-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Leaflet Map Custom Styling */
+        .leaflet-container {
+            background-color: #0b0f19 !important;
+            border-radius: 0.75rem;
+            z-index: 10;
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background-color: #121722 !important;
+            color: #f8fafc !important;
+            border: 1px solid #1f293d;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+        }
+        .leaflet-popup-content {
+            margin: 12px 16px;
+        }
+        .leaflet-tile-pane {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col carbon-bg antialiased selection:bg-cyan-500 selection:text-black">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-[#121722] border border-cyan-500/50 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-cyan-400 text-lg"></i>
+        <span id="toastMsg" class="text-sm font-medium">Notification message</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-[#080a0f]/90 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Name -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-pink-500 p-0.5 shadow-lg shadow-cyan-500/20">
+                        <div class="w-full h-full bg-[#0a0d14] rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-motorcycle text-cyan-400 text-2xl transform -rotate-12"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-display font-black text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-pink-500 text-glow-cyan">GP BOYZ</span>
+                            <span class="text-[10px] font-mono uppercase bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800/50">M.C.</span>
+                        </div>
+                        <p class="text-xs text-gray-400 tracking-widest font-mono">EST. 2021 • TAMBIKE CLUB</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2 bg-[#121722] p-1.5 rounded-xl border border-gray-800">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-cyan-400 bg-cyan-950/50 border border-cyan-800/40">
+                        <i class="fa-solid fa-house mr-1.5"></i> Home
+                    </button>
+                    <button onclick="switchTab('tambike')" id="nav-tambike" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800">
+                        <i class="fa-solid fa-map-location-dot mr-1.5 text-pink-500"></i> Tambikes & Maps
+                    </button>
+                    <button onclick="switchTab('garage')" id="nav-garage" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800">
+                        <i class="fa-solid fa-warehouse mr-1.5 text-amber-400"></i> Builds Garage
+                    </button>
+                    <button onclick="switchTab('leadership')" id="nav-leadership" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800">
+                        <i class="fa-solid fa-shield-halved mr-1.5 text-cyan-400"></i> Officers
+                    </button>
+                    <button onclick="switchTab('roster')" id="nav-roster" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800">
+                        <i class="fa-solid fa-users mr-1.5 text-emerald-400"></i> Roster
+                    </button>
+                </nav>
+
+                <!-- Auth & Role Toggle Area -->
+                <div class="flex items-center space-x-3">
+                    
+                    <!-- Admin Indicator Badge -->
+                    <div id="roleBadge" class="hidden sm:flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs font-mono">
+                        <span id="roleLabel" class="px-2 py-1 rounded bg-gray-800 text-gray-300">Member</span>
+                        <button onclick="toggleRole()" title="Quick Switch Role for Demo" class="px-2 py-1 text-cyan-400 hover:text-cyan-300 hover:bg-gray-800 rounded transition flex items-center">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> Switch
+                        </button>
+                    </div>
+
+                    <!-- Auth Button -->
+                    <button id="authBtn" onclick="openAuthModal()" class="px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-lg shadow-cyan-500/20 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span id="authBtnText">Login</span>
+                    </button>
+
+                    <!-- Mobile Menu Toggle Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-gray-800 text-gray-300 hover:text-white">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-[#0c1017] border-b border-gray-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('home')" class="w-full text-left px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 flex items-center">
+                <i class="fa-solid fa-house w-6 text-cyan-400"></i> Home
+            </button>
+            <button onclick="switchTab('tambike')" class="w-full text-left px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 flex items-center">
+                <i class="fa-solid fa-map-location-dot w-6 text-pink-500"></i> Tambike Events & Map
+            </button>
+            <button onclick="switchTab('garage')" class="w-full text-left px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 flex items-center">
+                <i class="fa-solid fa-warehouse w-6 text-amber-400"></i> Builds Showcase
+            </button>
+            <button onclick="switchTab('leadership')" class="w-full text-left px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 flex items-center">
+                <i class="fa-solid fa-shield-halved w-6 text-cyan-400"></i> Officers & Admin
+            </button>
+            <button onclick="switchTab('roster')" class="w-full text-left px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 flex items-center">
+                <i class="fa-solid fa-users w-6 text-emerald-400"></i> Member Roster
+            </button>
+            <div class="pt-2 border-t border-gray-800 flex items-center justify-between">
+                <span class="text-xs text-gray-400">Active Mode: <strong id="mobileRoleLabel" class="text-cyan-400">Member</strong></span>
+                <button onclick="toggleRole()" class="text-xs bg-gray-800 px-3 py-1.5 rounded text-cyan-400 hover:bg-gray-700">
+                    Switch to <span id="mobileSwitchTarget">Admin</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- PAGE 1: HOME PAGE -->
+        <section id="page-home" class="space-y-12">
+            
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden border border-gray-800 bg-gradient-to-br from-gray-900 via-slate-900 to-black p-8 md:p-12 shadow-2xl">
+                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+                <div class="relative z-10 max-w-2xl space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 text-xs font-mono uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span>Official GP BOYZ Portal</span>
+                    </div>
+                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+                        RIDE TOGETHER. <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-emerald-400 to-pink-500">TAMBIKE FOREVER.</span>
+                    </h1>
+                    <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
+                        Welcome to the official hub of GP BOYZ Motorcycle Club. Track our latest tambike meetups with interactive pin locations, explore custom street build specs, meet our officers, and verify active club badges.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="switchTab('tambike')" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold font-display tracking-wider text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center">
+                            <i class="fa-solid fa-map-pin mr-2"></i> VIEW LATEST TAMBIKES
+                        </button>
+                        <button onclick="switchTab('garage')" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium border border-gray-700 text-sm transition-all flex items-center">
+                            <i class="fa-solid fa-motorcycle mr-2 text-amber-400"></i> EXPLORE GARAGE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-[#121722] p-5 rounded-2xl border border-gray-800/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-950/80 text-cyan-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white font-display" id="statTambikesCount">0</div>
+                        <div class="text-xs text-gray-400">Upcoming Tambikes</div>
+                    </div>
+                </div>
+                <div class="bg-[#121722] p-5 rounded-2xl border border-gray-800/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-950/80 text-amber-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white font-display" id="statBuildsCount">0</div>
+                        <div class="text-xs text-gray-400">Featured Builds</div>
+                    </div>
+                </div>
+                <div class="bg-[#121722] p-5 rounded-2xl border border-gray-800/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white font-display" id="statMembersCount">0</div>
+                        <div class="text-xs text-gray-400">Official Members</div>
+                    </div>
+                </div>
+                <div class="bg-[#121722] p-5 rounded-2xl border border-gray-800/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-pink-950/80 text-pink-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white font-display">100%</div>
+                        <div class="text-xs text-gray-400">GP BOYZ Brotherhood</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Announcements Showcase -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold font-display text-white">LATEST CLUB ANNOUNCEMENTS</h2>
+                        <p class="text-sm text-gray-400">Stay updated with rides, tambike schedules, and club news</p>
+                    </div>
+                    <button onclick="switchTab('tambike')" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center">
+                        SEE ALL MAP LOCATIONS <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <div id="homeAnnouncementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: TAMBIKES & MAPS -->
+        <section id="page-tambike" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold font-display text-white flex items-center gap-3">
+                        <i class="fa-solid fa-map-location-dot text-pink-500"></i> TAMBIKE ANNOUNCEMENTS & MAP
+                    </h1>
+                    <p class="text-sm text-gray-400">Find upcoming tambike meetups, exact GPS map pins, and get driving directions.</p>
+                </div>
+
+                <!-- Admin Action Button -->
+                <div id="adminTambikeControls" class="hidden">
+                    <button onclick="openCreateTambikeModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-pink-500/20 transition flex items-center">
+                        <i class="fa-solid fa-plus-circle mr-2"></i> Post New Tambike (Admin)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Layout Grid: Interactive Map + Event List -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Map Container (7 cols) -->
+                <div class="lg:col-span-7 bg-[#121722] border border-gray-800 rounded-2xl p-4 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between text-xs font-mono text-gray-400">
+                        <span><i class="fa-solid fa-crosshairs text-cyan-400 mr-1"></i> Interactive Pin Map (Davao City)</span>
+                        <span>Click pins for venue details or directions</span>
+                    </div>
+                    
+                    <!-- Leaflet Container -->
+                    <div id="tambikeMap" class="w-full h-[450px] rounded-xl border border-gray-800"></div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-400 pt-1">
+                        <span class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-pink-500 inline-block"></span> Upcoming Meetup
+                            <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block ml-2"></span> Active Map Pin
+                        </span>
+                        <span class="text-cyan-400 italic">Powered by OpenStreetMap & Google Directions</span>
+                    </div>
+                </div>
+
+                <!-- Event Cards List (5 cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                    <h3 class="text-lg font-bold font-display text-white flex items-center justify-between">
+                        <span>Scheduled Tambikes</span>
+                        <span id="tambikeBadgeCount" class="text-xs bg-gray-800 text-cyan-400 px-2.5 py-1 rounded-full font-mono">0 Events</span>
+                    </h3>
+
+                    <div id="tambikeEventsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: BUILDS GARAGE -->
+        <section id="page-garage" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold font-display text-white flex items-center gap-3">
+                        <i class="fa-solid fa-warehouse text-amber-400"></i> MEMBER BUILDS GARAGE
+                    </h1>
+                    <p class="text-sm text-gray-400">Showcase of customized street GP scooters and motorcycles owned by members.</p>
+                </div>
+
+                <div id="adminGarageControls" class="hidden">
+                    <button onclick="openAddBuildModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-bold text-sm shadow-lg shadow-amber-500/20 transition flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Bike Build (Admin)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div id="garageCategoryFilters" class="flex flex-wrap gap-2 pb-2 border-b border-gray-800">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Builds Grid -->
+            <div id="buildsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Build Cards -->
+            </div>
+        </section>
+
+        <!-- PAGE 4: LEADERSHIP & OFFICERS -->
+        <section id="page-leadership" class="hidden space-y-10">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 text-xs font-mono uppercase">
+                    <span>CLUB GOVERNANCE</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black font-display text-white">FOUNDERS & OFFICERS</h1>
+                <p class="text-gray-400 text-sm">The dedicated leaders guiding the GP BOYZ brotherhood, managing rides, events, and community discipline.</p>
+            </div>
+
+            <!-- Leadership Cards Container -->
+            <div id="leadershipGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Dynamically populated leadership cards -->
+            </div>
+        </section>
+
+        <!-- PAGE 5: MEMBER ROSTER -->
+        <section id="page-roster" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold font-display text-white flex items-center gap-3">
+                        <i class="fa-solid fa-id-badge text-emerald-400"></i> OFFICIAL MEMBER ROSTER
+                    </h1>
+                    <p class="text-sm text-gray-400">Official registry of active GP BOYZ members with assigned badge numbers.</p>
+                </div>
+
+                <div id="adminRosterControls" class="hidden">
+                    <button onclick="openAddMemberModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition flex items-center">
+                        <i class="fa-solid fa-user-plus mr-2"></i> Register New Member
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter Controls -->
+            <div class="bg-[#121722] p-4 rounded-2xl border border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-500"></i>
+                    <input type="text" id="rosterSearch" oninput="filterRoster()" placeholder="Search Name, Badge #, or Bike..." class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+                </div>
+
+                <div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                    <span class="text-xs text-gray-400 font-mono uppercase whitespace-nowrap">Status:</span>
+                    <select id="rosterFilterStatus" onchange="filterRoster()" class="bg-gray-900 border border-gray-800 text-xs text-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500">
+                        <option value="ALL">All Statuses</option>
+                        <option value="Founder">Founder</option>
+                        <option value="Admin">Admin / Officer</option>
+                        <option value="VIP">VIP</option>
+                        <option value="Active">Active Member</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Roster Table / Cards -->
+            <div class="bg-[#121722] rounded-2xl border border-gray-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-900/80 border-b border-gray-800 text-xs font-mono text-gray-400 uppercase">
+                                <th class="p-4">Badge #</th>
+                                <th class="p-4">Member Name</th>
+                                <th class="p-4">Primary Bike Model</th>
+                                <th class="p-4">Status / Role</th>
+                                <th class="p-4">Joined Date</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rosterTableBody" class="divide-y divide-gray-800/60 text-sm">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#06080d] border-t border-gray-800/80 py-8 mt-12 text-gray-500 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="font-display font-bold text-white tracking-widest">GP BOYZ M.C.</span>
+                <span>•</span>
+                <span>All Rights Reserved &copy; 2026</span>
+            </div>
+            <div class="flex items-center space-x-6 text-gray-400">
+                <span class="hover:text-cyan-400 cursor-pointer" onclick="switchTab('home')">Home</span>
+                <span class="hover:text-cyan-400 cursor-pointer" onclick="switchTab('tambike')">Tambikes</span>
+                <span class="hover:text-cyan-400 cursor-pointer" onclick="switchTab('garage')">Garage</span>
+                <span class="hover:text-cyan-400 cursor-pointer" onclick="switchTab('leadership')">Officers</span>
+                <span class="hover:text-cyan-400 cursor-pointer" onclick="switchTab('roster')">Roster</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="resetDataToDefault()" title="Reset saved local data" class="text-xs text-gray-500 hover:text-red-400 font-mono transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reset Data
+                </button>
+                <p>Street GP Culture • Respect & Respect Only</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALS SECTION -->
+
+    <!-- 1. AUTHENTICATION MODAL -->
+    <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121722] border border-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-6">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-cyan-950/80 border border-cyan-800 rounded-xl flex items-center justify-center mx-auto text-cyan-400">
+                    <i class="fa-solid fa-lock text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold font-display text-white" id="authModalTitle">GP BOYZ Portal Sign In</h3>
+                <p class="text-xs text-gray-400">Enter member credentials or choose quick demo mode.</p>
+            </div>
+
+            <div class="flex bg-gray-900 p-1 rounded-xl text-xs font-medium">
+                <button id="authTabLogin" onclick="setAuthTab('login')" class="flex-1 py-2 rounded-lg bg-gray-800 text-white font-bold">Sign In</button>
+                <button id="authTabRegister" onclick="setAuthTab('register')" class="flex-1 py-2 rounded-lg text-gray-400 hover:text-white">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Badge # or Username</label>
+                    <input type="text" id="loginUsername" required placeholder="e.g. admin or GPB-001" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div class="bg-cyan-950/40 border border-cyan-800/40 rounded-xl p-3 text-xs text-cyan-300">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Demo Credentials:</p>
+                    <p>• Admin: Username <b>admin</b> | Pass: <b>admin123</b></p>
+                    <p>• Member: Username <b>member</b> | Pass: <b>member123</b></p>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold font-display text-sm shadow-lg shadow-cyan-500/20 transition">
+                    SIGN IN TO PORTAL
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. CREATE TAMBIKE ANNOUNCEMENT MODAL (ADMIN) -->
+    <div id="addTambikeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121722] border border-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeCreateTambikeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 border-b border-gray-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-pink-950/80 text-pink-400 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-map-pin"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Post New Tambike</h3>
+                    <p class="text-xs text-gray-400">Set venue, date, time, and exact GPS location pin.</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleCreateTambike(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Tambike Title / Event Name *</label>
+                    <input type="text" id="tambikeTitle" required placeholder="e.g. Friday Night Chill Tambike" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Date *</label>
+                        <input type="date" id="tambikeDate" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Time *</label>
+                        <input type="text" id="tambikeTime" required placeholder="e.g. 8:00 PM" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Venue Name / Location Description *</label>
+                    <input type="text" id="tambikeLocation" required placeholder="e.g. Shell Station, Diversion Road" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Pin Location on Map (Click map or type coords)</label>
+                    <div id="pickerMap" class="w-full h-48 rounded-xl border border-gray-800 mb-2"></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" step="any" id="tambikeLat" placeholder="Latitude" required class="bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                        <input type="number" step="any" id="tambikeLng" placeholder="Longitude" required class="bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Notes / Announcement Details</label>
+                    <textarea id="tambikeDesc" rows="2" placeholder="e.g. Bring full gear. Strict compliance with club rules." class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-pink-500"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-pink-500/20 transition">
+                    PUBLISH TAMBIKE ANNOUNCEMENT
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. ADD BUILD SHOWCASE MODAL (ADMIN) -->
+    <div id="addBuildModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121722] border border-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAddBuildModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 border-b border-gray-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-950/80 text-amber-400 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Add Member Bike Build</h3>
+                    <p class="text-xs text-gray-400">Showcase motorcycle specs and modifications.</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleSaveBuild(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Owner Name *</label>
+                        <input type="text" id="buildOwner" required placeholder="Owner Name" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Badge # *</label>
+                        <input type="text" id="buildBadge" required placeholder="GPB-000" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Model Name *</label>
+                        <input type="text" id="buildModel" required placeholder="e.g. Honda Click 125i" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Category *</label>
+                        <select id="buildCategory" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                            <option value="Honda Click">Honda Click</option>
+                            <option value="Yamaha NMAX">Yamaha NMAX</option>
+                            <option value="Yamaha Aerox">Yamaha Aerox</option>
+                            <option value="Honda Beat">Honda Beat</option>
+                            <option value="Street GP Custom">Street GP Custom</option>
+                            <option value="Other Scooters">Other Scooters</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Image URL</label>
+                    <input type="url" id="buildImage" placeholder="https://..." class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Modifications / Specs (Comma separated)</label>
+                    <textarea id="buildSpecs" rows="3" placeholder="JVT Racing Pipe, ECU Shop Tune, RCB Calipers, 59mm Bore Kit" class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-sm text-white"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition">
+                    SAVE TO GARAGE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. ADD MEMBER MODAL (ADMIN) -->
+    <div id="addMemberModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121722] border border-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeAddMemberModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 border-b border-gray-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Register Club Member</h3>
+                    <p class="text-xs text-gray-400">Issue official badge number and register details.</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleSaveMember(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Full Name *</label>
+                    <input type="text" id="memberName" required placeholder="John Doe" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Badge Number *</label>
+                        <input type="text" id="memberBadge" required placeholder="GPB-013" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-gray-400 mb-1">Status / Role</label>
+                        <select id="memberStatus" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                            <option value="Active">Active Member</option>
+                            <option value="VIP">VIP</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Founder">Founder</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-gray-400 mb-1">Bike Model *</label>
+                    <input type="text" id="memberBike" required placeholder="e.g. Yamaha Aerox 155" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition">
+                    REGISTER MEMBER
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // INITIAL DEFAULT DATA (Davao City, Philippines Coordinates)
+        const DEFAULT_TAMBIKES = [
+            {
+                id: 1,
+                title: "Friday Night City Ride & Tambike",
+                date: "2026-11-06",
+                time: "8:30 PM",
+                location: "Total Station, Diversion Highway",
+                lat: 7.0850,
+                lng: 125.6120,
+                description: "Weekly GP BOYZ meetup. Full helmet and shoes required. Respect traffic rules."
+            },
+            {
+                id: 2,
+                title: "Weekend Coastal Road Run & Coffee",
+                date: "2026-11-08",
+                time: "6:00 AM",
+                location: "Coastal View Park Grounds",
+                lat: 7.0600,
+                lng: 125.5900,
+                description: "Early morning breakfast ride followed by photo session and Tambike coffee."
+            },
+            {
+                id: 3,
+                title: "Monthly Officers & Members General Tambike",
+                date: "2026-11-15",
+                time: "7:00 PM",
+                location: "GP Boyz Headquarters & Pitstop",
+                lat: 7.1000,
+                lng: 125.6300,
+                description: "Monthly discussion regarding anniversary rides, club shirts, and new badge issuances."
+            }
+        ];
+
+        const DEFAULT_BUILDS = [
+            {
+                id: 101,
+                owner: "Marco 'Chief' Reyes",
+                badge: "GPB-001",
+                model: "Honda Click 125i v2",
+                category: "Honda Click",
+                image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80",
+                specs: ["59mm Touring Bore Kit", "JVT Version 3 Pipe", "Koso Mini 3 Gauge", "RCB E2 Brake Master", "Street Concept Decals"]
+            },
+            {
+                id: 102,
+                owner: "Dave 'Speedy' Santos",
+                badge: "GPB-002",
+                model: "Yamaha NMAX 155",
+                category: "Yamaha NMAX",
+                image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80",
+                specs: ["63mm Ceramic Cylinder Kit", "YSS G-Sport Rear Shocks", "Brembo 4-Pot Front Caliper", "ECU Shop Octane S", "Custom GP Carbon Accents"]
+            },
+            {
+                id: 103,
+                owner: "Jayson 'Rocket' Cruz",
+                badge: "GPB-003",
+                model: "Yamaha Aerox 155",
+                category: "Yamaha Aerox",
+                image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80",
+                specs: ["Full Titanium Exhaust System", "Ohlins Subtank Rear Shocks", "TDR CVT Set 13.5g", "Forged Carbon Fiber Panels"]
+            },
+            {
+                id: 104,
+                owner: "Alvin 'Vino' Torres",
+                badge: "GPB-005",
+                model: "Honda Beat FI",
+                category: "Honda Beat",
+                image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80",
+                specs: ["54mm Street Spec Engine", "MTRT Chrome Pipe", "NCY Clutch Assembly", "12-Inch Machined Rims"]
+            },
+            {
+                id: 105,
+                owner: "Marlon 'Apex' Gutierrez",
+                badge: "GPB-008",
+                model: "Honda Click 150i Game Changer",
+                category: "Honda Click",
+                image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80",
+                specs: ["ARacer Mini5 ECU", "Uma Racing Throttle Body 30mm", "RCB Forged Wheels", "Koso High Cam"]
+            },
+            {
+                id: 106,
+                owner: "Kenneth 'Slick' Ramos",
+                badge: "GPB-010",
+                model: "Street GP Special Custom",
+                category: "Street GP Custom",
+                image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80",
+                specs: ["Custom Drag Chassis", "Open ECU Tuning", "Full Carbon Body", "Nitrous Oxide Setup"]
+            }
+        ];
+
+        const DEFAULT_ROSTER = [
+            { id: 1, name: "Marco 'Chief' Reyes", badge: "GPB-001", bike: "Honda Click 125i", status: "Founder", joined: "2021-03-15" },
+            { id: 2, name: "Dave 'Speedy' Santos", badge: "GPB-002", bike: "Yamaha NMAX 155", status: "Founder", joined: "2021-03-15" },
+            { id: 3, name: "Jayson 'Rocket' Cruz", badge: "GPB-003", bike: "Yamaha Aerox 155", status: "Admin", joined: "2021-04-01" },
+            { id: 4, name: "Rico 'Ghost' Navarro", badge: "GPB-004", bike: "Honda Click 150i", status: "Admin", joined: "2021-05-10" },
+            { id: 5, name: "Alvin 'Vino' Torres", badge: "GPB-005", bike: "Honda Beat FI", status: "Active", joined: "2021-06-20" },
+            { id: 6, name: "Paolo 'Zero' Mendoza", badge: "GPB-006", bike: "Yamaha NMAX 155", status: "Active", joined: "2021-08-12" },
+            { id: 7, name: "Christian 'Blade' Garcia", badge: "GPB-007", bike: "Honda Click 125i", status: "VIP", joined: "2022-01-05" },
+            { id: 8, name: "Marlon 'Apex' Gutierrez", badge: "GPB-008", bike: "Honda Click 150i", status: "Active", joined: "2022-02-18" },
+            { id: 9, name: "Gabriel 'Viper' Lopez", badge: "GPB-009", bike: "Yamaha Aerox 155", status: "Active", joined: "2022-04-30" },
+            { id: 10, name: "Kenneth 'Slick' Ramos", badge: "GPB-010", bike: "Custom Street GP", status: "Active", joined: "2022-07-14" },
+            { id: 11, name: "Mark 'Nitro' Fernandez", badge: "GPB-011", bike: "Honda Beat FI", status: "Active", joined: "2023-01-22" },
+            { id: 12, name: "Jerome 'Shift' Aquilino", badge: "GPB-012", bike: "Yamaha NMAX 155", status: "Active", joined: "2023-05-09" }
+        ];
+
+        const clubLeaders = [
+            {
+                name: "Marco 'Chief' Reyes",
+                role: "Founder & Club President",
+                badge: "GPB-001",
+                bike: "Honda Click 125i Custom",
+                image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80",
+                bio: "Founder of GP BOYZ M.C. Established the club with the mission of promoting brotherhood, disciplined riding, and high-octane street culture."
+            },
+            {
+                name: "Dave 'Speedy' Santos",
+                role: "Co-Founder & Vice President",
+                badge: "GPB-002",
+                bike: "Yamaha NMAX 155 Spec",
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
+                bio: "Oversees route safety, ride logistics, and event coordination. Lead road captain during long distance rides."
+            },
+            {
+                name: "Jayson 'Rocket' Cruz",
+                role: "Head Admin & Marshal",
+                badge: "GPB-003",
+                bike: "Yamaha Aerox 155",
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80",
+                bio: "Manages official member registration, tambike announcements, and maintains club discipline."
+            }
+        ];
+
+        // LOCAL STORAGE STATE MANAGEMENT
+        let tambikesList = JSON.parse(localStorage.getItem('gpboyz_tambikes')) || DEFAULT_TAMBIKES;
+        let garageBuilds = JSON.parse(localStorage.getItem('gpboyz_builds')) || DEFAULT_BUILDS;
+        let memberRoster = JSON.parse(localStorage.getItem('gpboyz_roster')) || DEFAULT_ROSTER;
+        
+        let currentUser = JSON.parse(localStorage.getItem('gpboyz_user')) || null;
+        let currentRole = currentUser ? currentUser.role : 'MEMBER';
+        let currentTab = 'home';
+        let selectedGarageCategory = 'ALL';
+
+        // Leaflet Maps Variables
+        let tambikeMapInstance = null;
+        let pickerMapInstance = null;
+        let mapMarkersGroup = null;
+        let pickerMarker = null;
+
+        function saveState() {
+            localStorage.setItem('gpboyz_tambikes', JSON.stringify(tambikesList));
+            localStorage.setItem('gpboyz_builds', JSON.stringify(garageBuilds));
+            localStorage.setItem('gpboyz_roster', JSON.stringify(memberRoster));
+            localStorage.setItem('gpboyz_user', JSON.stringify(currentUser));
+        }
+
+        function resetDataToDefault() {
+            if (confirm('Reset all saved tambikes, garage builds, and roster data to default values?')) {
+                localStorage.clear();
+                tambikesList = DEFAULT_TAMBIKES;
+                garageBuilds = DEFAULT_BUILDS;
+                memberRoster = DEFAULT_ROSTER;
+                currentUser = null;
+                currentRole = 'MEMBER';
+                saveState();
+                applyRoleState();
+                renderHomeAnnouncements();
+                renderGarageFilters();
+                renderGarageBuilds();
+                renderRoster();
+                updateStatsCounts();
+                showToast('Reset all portal data to initial defaults.');
+            }
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            applyRoleState();
+            renderHomeAnnouncements();
+            renderGarageFilters();
+            renderGarageBuilds();
+            renderLeadership();
+            renderRoster();
+            updateStatsCounts();
+        };
+
+        // UI Toast Notification
+        function showToast(msg, icon = 'fa-circle-check') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${icon} text-cyan-400 text-lg`;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const pages = ['home', 'tambike', 'garage', 'leadership', 'roster'];
+            pages.forEach(p => {
+                document.getElementById(`page-${p}`).classList.add('hidden');
+            });
+            document.getElementById(`page-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800";
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-cyan-400 bg-cyan-950/50 border border-cyan-800/40 font-bold";
+            }
+
+            document.getElementById('mobileMenu').classList.add('hidden');
+
+            if (tabId === 'tambike') {
+                setTimeout(() => {
+                    initTambikeMap();
+                }, 100);
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        function toggleRole() {
+            if (currentRole === 'MEMBER') {
+                currentRole = 'ADMIN';
+                currentUser = { username: 'Admin', role: 'ADMIN' };
+                showToast('Switched to Admin Mode', 'fa-shield-halved');
+            } else {
+                currentRole = 'MEMBER';
+                currentUser = null;
+                showToast('Switched to Member Mode', 'fa-user');
+            }
+            saveState();
+            applyRoleState();
+        }
+
+        function applyRoleState() {
+            const roleLabel = document.getElementById('roleLabel');
+            const mobileRoleLabel = document.getElementById('mobileRoleLabel');
+            const mobileSwitchTarget = document.getElementById('mobileSwitchTarget');
+            const authBtnText = document.getElementById('authBtnText');
+            
+            const adminTambikeControls = document.getElementById('adminTambikeControls');
+            const adminGarageControls = document.getElementById('adminGarageControls');
+            const adminRosterControls = document.getElementById('adminRosterControls');
+
+            if (currentRole === 'ADMIN') {
+                roleLabel.textContent = 'ADMIN MODE';
+                roleLabel.className = 'px-2 py-1 rounded bg-pink-950 text-pink-400 font-bold border border-pink-800';
+                mobileRoleLabel.textContent = 'ADMIN';
+                mobileRoleLabel.className = 'text-pink-400 font-bold';
+                mobileSwitchTarget.textContent = 'Member';
+                authBtnText.textContent = 'Logout (Admin)';
+
+                adminTambikeControls.classList.remove('hidden');
+                adminGarageControls.classList.remove('hidden');
+                adminRosterControls.classList.remove('hidden');
+            } else {
+                roleLabel.textContent = 'Member';
+                roleLabel.className = 'px-2 py-1 rounded bg-gray-800 text-gray-300';
+                mobileRoleLabel.textContent = 'Member';
+                mobileRoleLabel.className = 'text-cyan-400';
+                mobileSwitchTarget.textContent = 'Admin';
+                authBtnText.textContent = 'Login';
+
+                adminTambikeControls.classList.add('hidden');
+                adminGarageControls.classList.add('hidden');
+                adminRosterControls.classList.add('hidden');
+            }
+
+            renderTambikeList();
+            renderGarageBuilds();
+            renderRoster();
+        }
+
+        function navigateToDestination(destLat, destLng) {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}&travelmode=driving`;
+            window.open(url, '_blank');
+        }
+
+        function updateStatsCounts() {
+            document.getElementById('statTambikesCount').textContent = tambikesList.length;
+            document.getElementById('statBuildsCount').textContent = garageBuilds.length;
+            document.getElementById('statMembersCount').textContent = memberRoster.length;
+            document.getElementById('tambikeBadgeCount').textContent = `${tambikesList.length} Events`;
+        }
+
+        // MAP LOGIC (LEAFLET)
+        function initTambikeMap() {
+            if (tambikeMapInstance) {
+                tambikeMapInstance.invalidateSize();
+                return;
+            }
+
+            const defaultCenter = [7.0850, 125.6120];
+            tambikeMapInstance = L.map('tambikeMap').setView(defaultCenter, 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(tambikeMapInstance);
+
+            mapMarkersGroup = L.layerGroup().addTo(tambikeMapInstance);
+
+            renderMapPins();
+            renderTambikeList();
+        }
+
+        function renderMapPins() {
+            if (!mapMarkersGroup) return;
+            mapMarkersGroup.clearLayers();
+
+            tambikesList.forEach(item => {
+                const marker = L.marker([item.lat, item.lng]).addTo(mapMarkersGroup);
+                
+                const popupContent = `
+                    <div class="space-y-2 max-w-xs font-sans">
+                        <span class="text-[10px] font-mono bg-pink-950 text-pink-400 px-2 py-0.5 rounded border border-pink-800 font-bold uppercase">Tambike Pin</span>
+                        <h4 class="font-bold text-sm text-white">${item.title}</h4>
+                        <p class="text-xs text-gray-300"><i class="fa-solid fa-calendar mr-1 text-cyan-400"></i> ${item.date} @ ${item.time}</p>
+                        <p class="text-xs text-gray-300"><i class="fa-solid fa-location-dot mr-1 text-pink-400"></i> ${item.location}</p>
+                        <div class="pt-2 border-t border-gray-800">
+                            <button onclick="navigateToDestination(${item.lat}, ${item.lng})" class="inline-flex items-center justify-center w-full py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-xs rounded-lg transition">
+                                <i class="fa-solid fa-diamond-turn-right mr-1.5"></i> GET DIRECTIONS
+                            </button>
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        function panToLocation(lat, lng, title) {
+            if (!tambikeMapInstance) return;
+            tambikeMapInstance.setView([lat, lng], 15, { animate: true });
+            
+            mapMarkersGroup.eachLayer(marker => {
+                const pos = marker.getLatLng();
+                if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001) {
+                    marker.openPopup();
+                }
+            });
+        }
+
+        // RENDER FUNCTIONS
+
+        function renderHomeAnnouncements() {
+            const grid = document.getElementById('homeAnnouncementsGrid');
+            if (!grid) return;
+
+            if (tambikesList.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500 bg-[#121722] rounded-2xl border border-gray-800">
+                        No active announcements posted yet.
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = tambikesList.slice(0, 3).map(item => {
+                return `
+                    <div class="bg-[#121722] rounded-2xl border border-gray-800 p-6 flex flex-col justify-between hover:border-cyan-500/50 transition-all duration-300 shadow-lg group">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-400 text-xs font-mono font-semibold border border-cyan-800/50">
+                                    <i class="fa-solid fa-motorcycle mr-1"></i> TAMBIKE
+                                </span>
+                                <span class="text-xs text-gray-400 font-mono">${item.date}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">${item.title}</h3>
+                            <div class="space-y-1.5 text-xs text-gray-300">
+                                <p class="flex items-center"><i class="fa-solid fa-clock text-amber-400 w-5"></i> <span>${item.time}</span></p>
+                                <p class="flex items-center"><i class="fa-solid fa-location-dot text-pink-500 w-5"></i> <span>${item.location}</span></p>
+                            </div>
+                            <p class="text-xs text-gray-400 line-clamp-2">${item.description}</p>
+                        </div>
+                        <div class="pt-5 mt-4 border-t border-gray-800 flex items-center justify-between gap-2">
+                            <button onclick="switchTab('tambike'); setTimeout(() => panToLocation(${item.lat}, ${item.lng}, '${item.title}'), 200)" class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center">
+                                <i class="fa-solid fa-map-pin mr-1"></i> View Map Pin
+                            </button>
+                            <button onclick="navigateToDestination(${item.lat}, ${item.lng})" class="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs transition flex items-center">
+                                Route <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTambikeList() {
+            const container = document.getElementById('tambikeEventsList');
+            if (!container) return;
+
+            if (tambikesList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500 bg-[#121722] rounded-xl border border-gray-800">
+                        No tambikes scheduled.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tambikesList.map(item => {
+                const adminDeleteBtn = currentRole === 'ADMIN' ? 
+                    `<button onclick="deleteTambike(${item.id})" class="text-xs text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash"></i> Delete</button>` : '';
+
+                return `
+                    <div class="bg-[#121722] border border-gray-800 hover:border-pink-500/50 rounded-xl p-4 transition-all duration-200 space-y-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="font-bold text-white text-base">${item.title}</h4>
+                                <span class="text-xs text-pink-400 font-mono"><i class="fa-solid fa-calendar-day mr-1"></i> ${item.date} at ${item.time}</span>
+                            </div>
+                            ${adminDeleteBtn}
+                        </div>
+
+                        <div class="text-xs text-gray-300 space-y-1">
+                            <p class="flex items-center"><i class="fa-solid fa-location-dot text-pink-500 w-5"></i> <span>${item.location}</span></p>
+                            <p class="text-gray-400 italic">${item.description}</p>
+                        </div>
+
+                        <div class="flex items-center space-x-2 pt-2 border-t border-gray-800/80">
+                            <button onclick="panToLocation(${item.lat}, ${item.lng}, '${item.title}')" class="flex-1 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 text-xs font-bold transition flex items-center justify-center">
+                                <i class="fa-solid fa-crosshairs mr-1"></i> Focus Pin
+                            </button>
+                            <button onclick="navigateToDestination(${item.lat}, ${item.lng})" class="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold text-xs transition flex items-center justify-center">
+                                <i class="fa-solid fa-route mr-1"></i> Get Route
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGarageFilters() {
+            const categories = ['ALL', 'Honda Click', 'Yamaha NMAX', 'Yamaha Aerox', 'Honda Beat', 'Street GP Custom'];
+            const filterContainer = document.getElementById('garageCategoryFilters');
+            
+            filterContainer.innerHTML = categories.map(cat => {
+                const isActive = selectedGarageCategory === cat;
+                const activeClass = isActive 
+                    ? 'bg-amber-500 text-black font-bold border-amber-400 shadow-lg shadow-amber-500/20' 
+                    : 'bg-gray-900 text-gray-400 hover:text-white border-gray-800';
+                
+                return `
+                    <button onclick="setGarageCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs font-mono border transition-all duration-200 ${activeClass}">
+                        ${cat}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setGarageCategory(category) {
+            selectedGarageCategory = category;
+            renderGarageFilters();
+            renderGarageBuilds();
+        }
+
+        function renderGarageBuilds() {
+            const grid = document.getElementById('buildsGrid');
+            if (!grid) return;
+
+            const filtered = selectedGarageCategory === 'ALL' 
+                ? garageBuilds 
+                : garageBuilds.filter(b => b.category === selectedGarageCategory);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500 bg-[#121722] rounded-2xl border border-gray-800">
+                        <i class="fa-solid fa-motorcycle text-4xl mb-3 text-gray-600"></i>
+                        <p class="text-sm font-mono">No garage builds listed under this category yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(build => {
+                const adminDelete = currentRole === 'ADMIN' ? 
+                    `<button onclick="deleteBuild(${build.id})" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i> Delete</button>` : '';
+
+                return `
+                    <div class="bg-[#121722] rounded-2xl border border-gray-800 overflow-hidden hover:border-amber-500/40 transition-all duration-300 shadow-xl group">
+                        <div class="relative h-48 bg-gray-900 overflow-hidden">
+                            <img src="${build.image}" alt="${build.model}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80'">
+                            <div class="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-gray-700 text-xs font-mono text-amber-400 font-bold">
+                                ${build.badge}
+                            </div>
+                            <div class="absolute top-3 right-3">
+                                ${adminDelete}
+                            </div>
+                        </div>
+
+                        <div class="p-5 space-y-3">
+                            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                                <div>
+                                    <h3 class="font-bold text-white text-base">${build.model}</h3>
+                                    <p class="text-xs text-gray-400">Owner: <span class="text-cyan-400 font-medium">${build.owner}</span></p>
+                                </div>
+                                <span class="text-[10px] bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-mono">${build.category}</span>
+                            </div>
+
+                            <div>
+                                <span class="text-[11px] font-mono text-amber-400 uppercase tracking-wider block mb-1">
+                                    <i class="fa-solid fa-screwdriver-wrench mr-1"></i> Key Modifications & Specs:
+                                </span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${build.specs.map(spec => `<span class="bg-gray-900 border border-gray-800 text-[11px] text-gray-300 px-2 py-0.5 rounded-md">${spec}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLeadership() {
+            const grid = document.getElementById('leadershipGrid');
+            if (!grid) return;
+
+            grid.innerHTML = clubLeaders.map(leader => `
+                <div class="bg-[#121722] rounded-2xl border border-gray-800 p-6 flex flex-col items-center text-center space-y-4 hover:border-cyan-500/40 transition-all shadow-xl relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-bl-full pointer-events-none"></div>
+                    
+                    <div class="relative">
+                        <img src="${leader.image}" alt="${leader.name}" class="w-24 h-24 rounded-full object-cover border-2 border-cyan-400 p-1 shadow-lg shadow-cyan-500/20">
+                        <span class="absolute bottom-0 right-0 bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+                            ${leader.badge}
+                        </span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-bold font-display text-white group-hover:text-cyan-400 transition-colors">${leader.name}</h3>
+                        <p class="text-xs font-mono text-pink-400 font-semibold">${leader.role}</p>
+                        <p class="text-xs text-gray-400 font-mono"><i class="fa-solid fa-motorcycle text-amber-400 mr-1"></i> ${leader.bike}</p>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed border-t border-gray-800 pt-3">
+                        ${leader.bio}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function renderRoster(data = null) {
+            const tbody = document.getElementById('rosterTableBody');
+            if (!tbody) return;
+
+            const listToRender = data || memberRoster;
+
+            if (listToRender.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-gray-500 font-mono text-sm">
+                            No matching member found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = listToRender.map(m => {
+                let statusColor = 'bg-gray-800 text-gray-300';
+                if (m.status === 'Founder') statusColor = 'bg-pink-950 text-pink-400 border border-pink-800/60';
+                if (m.status === 'Admin') statusColor = 'bg-cyan-950 text-cyan-400 border border-cyan-800/60';
+                if (m.status === 'VIP') statusColor = 'bg-amber-950 text-amber-400 border border-amber-800/60';
+
+                const adminDelete = currentRole === 'ADMIN' ? 
+                    `<button onclick="deleteMember(${m.id})" class="text-xs text-red-400 hover:text-red-300 ml-2"><i class="fa-solid fa-user-minus"></i> Remove</button>` : '<span class="text-emerald-400 text-xs font-mono"><i class="fa-solid fa-circle-check mr-1"></i> Verified</span>';
+
+                return `
+                    <tr class="hover:bg-gray-900/50 transition">
+                        <td class="p-4 font-mono font-bold text-cyan-400">${m.badge}</td>
+                        <td class="p-4 font-medium text-white">${m.name}</td>
+                        <td class="p-4 text-gray-300">${m.bike}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-xs font-mono ${statusColor}">${m.status}</span>
+                        </td>
+                        <td class="p-4 text-xs font-mono text-gray-400">${m.joined}</td>
+                        <td class="p-4 text-right">
+                            ${adminDelete}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterRoster() {
+            const query = document.getElementById('rosterSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('rosterFilterStatus').value;
+
+            const filtered = memberRoster.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(query) || 
+                                      m.badge.toLowerCase().includes(query) || 
+                                      m.bike.toLowerCase().includes(query);
+                const matchesStatus = statusFilter === 'ALL' || m.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            renderRoster(filtered);
+        }
+
+        // AUTH MODAL FUNCTIONS
+        function openAuthModal() {
+            if (currentRole === 'ADMIN') {
+                currentRole = 'MEMBER';
+                currentUser = null;
+                saveState();
+                applyRoleState();
+                showToast('Logged out of Admin Mode');
+                return;
+            }
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function setAuthTab(tab) {
+            const loginBtn = document.getElementById('authTabLogin');
+            const regBtn = document.getElementById('authTabRegister');
+            
+            if (tab === 'login') {
+                loginBtn.className = "flex-1 py-2 rounded-lg bg-gray-800 text-white font-bold";
+                regBtn.className = "flex-1 py-2 rounded-lg text-gray-400 hover:text-white";
+            } else {
+                regBtn.className = "flex-1 py-2 rounded-lg bg-gray-800 text-white font-bold";
+                loginBtn.className = "flex-1 py-2 rounded-lg text-gray-400 hover:text-white";
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const userVal = document.getElementById('loginUsername').value.trim();
+            const passVal = document.getElementById('loginPassword').value.trim();
+
+            if (userVal.toLowerCase() === 'admin' && passVal === 'admin123') {
+                currentRole = 'ADMIN';
+                currentUser = { username: 'Admin', role: 'ADMIN' };
+                saveState();
+                applyRoleState();
+                closeAuthModal();
+                showToast('Welcome Admin!', 'fa-shield-halved');
+            } else {
+                currentRole = 'MEMBER';
+                currentUser = { username: userVal, role: 'MEMBER' };
+                saveState();
+                applyRoleState();
+                closeAuthModal();
+                showToast(`Signed in as ${userVal}`);
+            }
+        }
+
+        // TAMBIKE ANNOUNCEMENT (ADMIN)
+        function openCreateTambikeModal() {
+            document.getElementById('addTambikeModal').classList.remove('hidden');
+            
+            setTimeout(() => {
+                if (!pickerMapInstance) {
+                    const defaultPos = [7.0850, 125.6120];
+                    pickerMapInstance = L.map('pickerMap').setView(defaultPos, 13);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(pickerMapInstance);
+
+                    pickerMarker = L.marker(defaultPos, { draggable: true }).addTo(pickerMapInstance);
+
+                    document.getElementById('tambikeLat').value = defaultPos[0];
+                    document.getElementById('tambikeLng').value = defaultPos[1];
+
+                    pickerMarker.on('dragend', function(e) {
+                        const latlng = e.target.getLatLng();
+                        document.getElementById('tambikeLat').value = latlng.lat.toFixed(5);
+                        document.getElementById('tambikeLng').value = latlng.lng.toFixed(5);
+                    });
+
+                    pickerMapInstance.on('click', function(e) {
+                        pickerMarker.setLatLng(e.latlng);
+                        document.getElementById('tambikeLat').value = e.latlng.lat.toFixed(5);
+                        document.getElementById('tambikeLng').value = e.latlng.lng.toFixed(5);
+                    });
+                } else {
+                    pickerMapInstance.invalidateSize();
+                }
+            }, 200);
+        }
+
+        function closeCreateTambikeModal() {
+            document.getElementById('addTambikeModal').classList.add('hidden');
+        }
+
+        function handleCreateTambike(e) {
+            e.preventDefault();
+            const title = document.getElementById('tambikeTitle').value;
+            const date = document.getElementById('tambikeDate').value;
+            const time = document.getElementById('tambikeTime').value;
+            const location = document.getElementById('tambikeLocation').value;
+            const lat = parseFloat(document.getElementById('tambikeLat').value);
+            const lng = parseFloat(document.getElementById('tambikeLng').value);
+            const desc = document.getElementById('tambikeDesc').value;
+
+            const newItem = {
+                id: Date.now(),
+                title: title,
+                date: date,
+                time: time,
+                location: location,
+                lat: lat,
+                lng: lng,
+                description: desc || "Official GP BOYZ Tambike Meetup."
+            };
+
+            tambikesList.unshift(newItem);
+            saveState();
+
+            closeCreateTambikeModal();
+            renderHomeAnnouncements();
+            renderTambikeList();
+            renderMapPins();
+            updateStatsCounts();
+            showToast('New Tambike Posted Successfully!');
+
+            e.target.reset();
+        }
+
+        function deleteTambike(id) {
+            tambikesList = tambikesList.filter(t => t.id !== id);
+            saveState();
+            renderHomeAnnouncements();
+            renderTambikeList();
+            renderMapPins();
+            updateStatsCounts();
+            showToast('Tambike deleted.', 'fa-trash');
+        }
+
+        // BUILD SHOWCASE (ADMIN)
+        function openAddBuildModal() {
+            document.getElementById('addBuildModal').classList.remove('hidden');
+        }
+
+        function closeAddBuildModal() {
+            document.getElementById('addBuildModal').classList.add('hidden');
+        }
+
+        function handleSaveBuild(e) {
+            e.preventDefault();
+            const owner = document.getElementById('buildOwner').value;
+            const badge = document.getElementById('buildBadge').value;
+            const model = document.getElementById('buildModel').value;
+            const category = document.getElementById('buildCategory').value;
+            const image = document.getElementById('buildImage').value || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80';
+            const specsRaw = document.getElementById('buildSpecs').value;
+
+            const specsArr = specsRaw ? specsRaw.split(',').map(s => s.trim()) : ['Street GP Setup'];
+
+            const newBuild = {
+                id: Date.now(),
+                owner,
+                badge,
+                model,
+                category,
+                image,
+                specs: specsArr
+            };
+
+            garageBuilds.unshift(newBuild);
+            saveState();
+            closeAddBuildModal();
+            renderGarageBuilds();
+            updateStatsCounts();
+            showToast('Build saved to garage!');
+            e.target.reset();
+        }
+
+        function deleteBuild(id) {
+            garageBuilds = garageBuilds.filter(b => b.id !== id);
+            saveState();
+            renderGarageBuilds();
+            updateStatsCounts();
+            showToast('Build deleted from garage.', 'fa-trash');
+        }
+
+        // MEMBER ROSTER (ADMIN)
+        function openAddMemberModal() {
+            document.getElementById('addMemberModal').classList.remove('hidden');
+        }
+
+        function closeAddMemberModal() {
+            document.getElementById('addMemberModal').classList.add('hidden');
+        }
+
+        function handleSaveMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('memberName').value;
+            const badge = document.getElementById('memberBadge').value;
+            const status = document.getElementById('memberStatus').value;
+            const bike = document.getElementById('memberBike').value;
+
+            const today = new Date().toISOString().split('T')[0];
+
+            const newMember = {
+                id: Date.now(),
+                name,
+                badge,
+                status,
+                bike,
+                joined: today
+            };
+
+            memberRoster.push(newMember);
+            saveState();
+            closeAddMemberModal();
+            renderRoster();
+            updateStatsCounts();
+            showToast('New member registered successfully!');
+            e.target.reset();
+        }
+
+        function deleteMember(id) {
+            memberRoster = memberRoster.filter(m => m.id !== id);
+            saveState();
+            renderRoster();
+            updateStatsCounts();
+            showToast('Member removed from roster.', 'fa-trash');
+        }
+    </script>
+</body>
+</html>
